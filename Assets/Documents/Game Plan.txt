@@ -5,7 +5,6 @@ Top down 2D game. Player plans the movements of 1 or more groups of soldiers in 
 
 All planning is performed and then the level is started. The player can put in place triggers that may affect one or more of the soldiers.
 
-
 Ideas
 *****
 
@@ -17,3 +16,16 @@ Ideas
 - Players can assign different loadouts to soldiers
 - Levels may have physical items that provide rewards
 - Soldiers/people may be recruited during missions
+- Levels may be replayed (even after success), up until the point the player chooses to progress
+
+Tasks
+*****
+
+1. Create 2d circle, and background - DONE
+2. 2d circle will move to where left mouse-click occurs
+3. Player can move view by holding and dragging right-mouse
+4. 2d Circle will only move to grid
+5. Introduce rectangle objects with colliders
+6. 2d circle will pathfind around objects
+	- direct point to point when line of sight
+	- A* otherwise
