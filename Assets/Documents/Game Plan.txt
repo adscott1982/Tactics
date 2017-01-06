@@ -1,0 +1,19 @@
+Tactics
+*******
+
+Top down 2D game. Player plans the movements of 1 or more groups of soldiers in the environment, aiming to eliminate enemies and satisfy other objectives.
+
+All planning is performed and then the level is started. The player can put in place triggers that may affect one or more of the soldiers.
+
+
+Ideas
+*****
+
+- Triggers, a la Rainbow Six
+- Soldier development/promotion
+- When a soldier dies, they are permanently dead
+- Rewards can be used to level up the soldiers in the group
+- Players can assign soldiers to different groups
+- Players can assign different loadouts to soldiers
+- Levels may have physical items that provide rewards
+- Soldiers/people may be recruited during missions
