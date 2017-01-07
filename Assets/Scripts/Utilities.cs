@@ -19,9 +19,9 @@ public static class CameraExtensions
         return new Vector2(x, y);
     }
 
-    public static Rect OrthographicRect(this Camera camera)
+    public static Rect WorldRect(this Camera camera)
     {
-        float screenAspect = Screen.width / Screen.height;
+        float screenAspect = (float)Screen.width / Screen.height;
         float cameraHeight = camera.orthographicSize * 2;
 
         var width = cameraHeight * screenAspect;
