@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Football player object
+/// </summary>
 public class Player : MonoBehaviour
 {
     public Vector2 TargetPosition { get; set; }
@@ -10,7 +13,7 @@ public class Player : MonoBehaviour
     public float MaxSpeed = 2;
 
     // Use this for initialization
-    public void Start ()
+    public void Start()
 	{
 	    this.TargetPosition = this.transform.position;
         this.IsActive = true;
