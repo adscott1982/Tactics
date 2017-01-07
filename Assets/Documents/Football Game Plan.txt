@@ -1,0 +1,31 @@
+Football Game
+*************
+
+Top down 2D game. Player plans the movements of individual members of football team in either attacking or defending scenarios.
+
+Player will choose actions for all available players, and then advance a certain amount, and do so again.
+
+In the long run, it will be part management game, with the player taking control of matches, and player development.
+
+Actions a player can perform
+****************************
+
+On Ball:
+Pass - ground pass, lofted pass
+Shoot - Power shot, placed shot, chip
+Dribble - Normal, sprint
+Shield/Wait
+
+Off Ball:
+Run - Normal, sprint
+
+Ideas
+*****
+
+
+Tasks
+*****
+
+1. Create 2d circle, and background - DONE
+2. 2d circle will move to where left mouse-click occurs - DONE
+3. 2d circle must be selected, then the target position selected.
