@@ -30,7 +30,7 @@ public class PlayerManager : MonoBehaviour
         {
             var playerObject = Instantiate(Resources.Load(@"Prefabs\Player")) as GameObject;
             var player = playerObject.GetComponent<Player>();
-            player.MaxSpeed = 2.5f;
+            player.MaxSpeed = Random.value + 1;
             SpriteRenderer sprite = playerObject.GetComponent<SpriteRenderer>();
             sprite.color = Random.ColorHSV();
             
