@@ -11,6 +11,11 @@ public static class Utilities
 /// </summary>
 public static class CameraExtensions
 {
+    /// <summary>
+    /// Get a random position within a given rectangle.
+    /// </summary>
+    /// <param name="rect">The rectangle in which to find a random position.</param>
+    /// <returns>The <see cref="Vector2"/> containing the position coordinates.</returns>
     public static Vector2 RandomPosition(this Rect rect)
     {
         float x = Random.Range(rect.xMin, rect.xMax);
