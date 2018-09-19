@@ -13,7 +13,6 @@ public class PlayerManager : MonoBehaviour
     {
         var cameraRect = Camera.main.WorldRect();
         Debug.Log(string.Format("Camera Rectangle: [{0},{1}]", cameraRect.width, cameraRect.height));
-        CreatePlayers(PlayerCount, cameraRect);
 	}
 	
 	// Update is called once per frame

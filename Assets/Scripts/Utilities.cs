@@ -19,15 +19,25 @@ public static class CameraExtensions
         return new Vector2(x, y);
     }
 
-    public static Rect WorldRect(this Camera camera)
+    /// <summary>
+    /// Gets a Rect in world space for the given orthographic camera.
+    /// </summary>
+    /// <param name="orthoCamera"></param>
+    /// <returns>The <see cref="Rect"/> representing the orthocamera rectangle in world space.</returns>
+    public static Rect WorldRect(this Camera orthoCamera)
     {
+        if (!orthoCamera.orthographic)
+        {
+            throw new System.ArgumentException("Camera is not orthographic.");
+        }
+
         float screenAspect = (float)Screen.width / Screen.height;
-        float cameraHeight = camera.orthographicSize * 2;
+        float cameraHeight = orthoCamera.orthographicSize * 2;
 
         var width = cameraHeight * screenAspect;
         var height = cameraHeight;
-        var x = camera.transform.position.x - (width / 2);
-        var y = camera.transform.position.y - (height / 2);
+        var x = orthoCamera.transform.position.x - (width / 2);
+        var y = orthoCamera.transform.position.y - (height / 2);
 
         return new Rect(x, y, width, height); ;
     }
