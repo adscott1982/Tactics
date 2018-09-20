@@ -25,10 +25,10 @@ public static class CameraExtensions
     }
 
     /// <summary>
-    /// Gets a Rect in world space for the given orthographic camera.
+    /// Gets a <see cref="Rect"/> in world space for the given orthographic camera.
     /// </summary>
-    /// <param name="orthoCamera"></param>
-    /// <returns>The <see cref="Rect"/> representing the orthocamera rectangle in world space.</returns>
+    /// <param name="orthoCamera">The orthographic camera.</param>
+    /// <returns>The <see cref="Rect"/> representing the orthographic camera rectangle in world space.</returns>
     public static Rect WorldRect(this Camera orthoCamera)
     {
         if (!orthoCamera.orthographic)
