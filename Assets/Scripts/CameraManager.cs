@@ -16,30 +16,33 @@ public class CameraManager : MonoBehaviour
     {
         this.isPanning = false;
 	}
-	
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        if (!hasFocus)
-        {
-            this.isPanning = false;
-        }
-
-        this.previousMousePosition = this.currentMousePosition;
-    }
 
 	/// <summary>
     /// Called every frame.
     /// </summary>
     private void Update ()
 	{
-        this.HandleInputs();
+        if (Game.HasFocus && !Game.JustRegainedFocus)
+        {
+            this.HandleInputs();
+            
+        }
+
         this.HandlePanning();
         this.HandleZoom();
-	}
+    }
 
     private void HandleZoom()
     {
-        Camera.main.orthographicSize *= 1 + (this.zoomDelta / 10);
+        var worldMouse = Camera.main.ScreenToWorldPoint(this.currentMousePosition);
+        var worldRect = Camera.main.WorldRect();
+        
+        // If the mouse is inside the camera rectangle, perform the zoom
+        if (worldRect.Contains(worldMouse))
+        {
+            Camera.main.orthographicSize *= 1 + (this.zoomDelta / 10);
+        }
+        
     }
 
     private void HandleInputs()
@@ -62,18 +65,18 @@ public class CameraManager : MonoBehaviour
     {
         this.currentMousePosition = Input.mousePosition;
 
-        Debug.Log(string.Format("Mouse X: {0}\tMouse Y: {1}", this.currentMousePosition.x, this.currentMousePosition.y));
-
         if (!this.isPanning)
         {
             this.previousMousePosition = this.currentMousePosition;
             return;
         }
 
+        Debug.Log($"Mouse X: {this.currentMousePosition.x}\tMouse Y: {this.currentMousePosition.y}");
+
         var mouseDelta = this.currentMousePosition - this.previousMousePosition;
 
         var worldDelta = Camera.main.ScreenToWorldPoint(this.previousMousePosition) - Camera.main.ScreenToWorldPoint(this.previousMousePosition + mouseDelta);
-        Debug.Log(string.Format("Delta X: {0}\tDeltaY: {1}", mouseDelta.x, mouseDelta.y));
+        Debug.Log($"Delta X: {mouseDelta.x}\tDeltaY: {mouseDelta.y}");
         this.previousMousePosition = this.currentMousePosition;
         
         this.transform.position += worldDelta;

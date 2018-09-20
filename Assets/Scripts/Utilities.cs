@@ -132,16 +132,6 @@ public static class CameraExtensions
         return bounds;
     }
 
-    public static Rect OrthographicRectInWorldSpace(this Camera camera)
-    {
-        var height = camera.orthographicSize * 2;
-        var width = height * Screen.width / Screen.height;
-        var x = camera.transform.position.x - (width / 2);
-        var y = camera.transform.position.y - (height / 2);
-
-        return new Rect(x, y, width, height);
-    }
-
     public static Vector2 AsVector2(this Vector3 vector3)
     {
         return new Vector2(vector3.x, vector3.y);
