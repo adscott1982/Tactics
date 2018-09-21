@@ -1,15 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+/// <summary>Class containing information about the current application process.</summary>
 public class Game : MonoBehaviour
 {
+    /// <summary>Whether the application has focus.</summary>
     public static bool HasFocus { get; private set; }
 
-    public static bool JustRegainedFocus { get; private set; }
-
-    public static bool HadFocusLastFrame { get; private set; }
-
+    // Called when the application gains or loses focus
     private void OnApplicationFocus(bool hasFocus)
     {
         if (!hasFocus)
@@ -21,6 +18,7 @@ public class Game : MonoBehaviour
             HasFocus = true;
         }
     }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,14 +28,5 @@ public class Game : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (HasFocus != HadFocusLastFrame)
-        {
-            HadFocusLastFrame = HasFocus;
-            JustRegainedFocus = true;
-        }
-        else
-        {
-            JustRegainedFocus = false;
-        }
     }
 }

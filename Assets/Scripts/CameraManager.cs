@@ -9,17 +9,13 @@ public class CameraManager : MonoBehaviour
     private Vector2 currentMousePosition;
     private float zoomDelta;
 
-    /// <summary>
-    /// Initialization method.
-    /// </summary>
+    // Initialization
     private void Start ()
     {
         this.isPanning = false;
 	}
 
-	/// <summary>
-    /// Called every frame.
-    /// </summary>
+	// Called every frame
     private void Update ()
 	{
         this.HandleInputs();
@@ -42,6 +38,7 @@ public class CameraManager : MonoBehaviour
 
     private void HandleInputs()
     {
+        // If starting panning set previous to current mouse position to prevent jump
         if (Input.GetMouseButtonDown(1))
         {
             this.isPanning = true;
@@ -60,22 +57,17 @@ public class CameraManager : MonoBehaviour
 
     private void HandlePanning()
     {
-        this.currentMousePosition = Input.mousePosition;
-
         if (!this.isPanning)
         {
-            this.previousMousePosition = this.currentMousePosition;
             return;
         }
 
-        Debug.Log($"Mouse X: {this.currentMousePosition.x}\tMouse Y: {this.currentMousePosition.y}");
+        this.currentMousePosition = Input.mousePosition;
 
         var mouseDelta = this.currentMousePosition - this.previousMousePosition;
-
         var worldDelta = Camera.main.ScreenToWorldPoint(this.previousMousePosition) - Camera.main.ScreenToWorldPoint(this.previousMousePosition + mouseDelta);
-        Debug.Log($"Delta X: {mouseDelta.x}\tDeltaY: {mouseDelta.y}");
-        this.previousMousePosition = this.currentMousePosition;
-        
+
         this.transform.position += worldDelta;
+        this.previousMousePosition = this.currentMousePosition;
     }
 }
