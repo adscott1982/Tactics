@@ -22,12 +22,7 @@ public class CameraManager : MonoBehaviour
     /// </summary>
     private void Update ()
 	{
-        if (Game.HasFocus && !Game.JustRegainedFocus)
-        {
-            this.HandleInputs();
-            
-        }
-
+        this.HandleInputs();
         this.HandlePanning();
         this.HandleZoom();
     }
@@ -47,11 +42,13 @@ public class CameraManager : MonoBehaviour
 
     private void HandleInputs()
     {
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButtonDown(1))
         {
             this.isPanning = true;
+            this.currentMousePosition = Input.mousePosition;
+            this.previousMousePosition = currentMousePosition;
         }
-        else
+        else if (Input.GetMouseButtonUp(1))
         {
             this.isPanning = false;
         }
