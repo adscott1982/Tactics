@@ -53,8 +53,6 @@ public class CameraManager : MonoBehaviour
         this.zoomDelta = -Input.GetAxis("Mouse ScrollWheel");
     }
 
-
-
     private void HandlePanning()
     {
         if (!this.isPanning)

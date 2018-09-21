@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class Utilities
@@ -21,8 +23,8 @@ public static class CameraExtensions
     /// <returns>The <see cref="Vector2"/> containing the position coordinates.</returns>
     public static Vector2 RandomPosition(this Rect rect)
     {
-        float x = Random.Range(rect.xMin, rect.xMax);
-        float y = Random.Range(rect.yMin, rect.yMax);
+        float x = UnityEngine.Random.Range(rect.xMin, rect.xMax);
+        float y = UnityEngine.Random.Range(rect.yMin, rect.yMax);
 
         return new Vector2(x, y);
     }
@@ -140,5 +142,25 @@ public static class CameraExtensions
     public static Vector3 AsVector3(this Vector2 vector2)
     {
         return new Vector3(vector2.x, vector2.y, 0);
+    }
+
+    public static bool HasScriptType<T>(this Transform transform)
+    {
+        return transform.GetComponents<MonoBehaviour>()
+            .Any(script => typeof(T).IsAssignableFrom(script.GetType()));
+    }
+
+    public static T GetScriptType<T>(this Transform transform)
+    {
+        if (!transform.HasScriptType<T>())
+        {
+            return default;
+        }
+
+        var value = transform.GetComponents<MonoBehaviour>()
+            .Where(script => typeof(T).IsAssignableFrom(script.GetType()))
+            .First();
+
+        return (T)(object)value;
     }
 }
