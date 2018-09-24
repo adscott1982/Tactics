@@ -1,7 +1,7 @@
-﻿/// <summary>
-/// Items which may be selected
-/// </summary>
-internal interface ISelectable
+﻿namespace Assets.Scripts.Interfaces
 {
-    bool IsSelected { get; set; }
+    internal interface ISelectable
+    {
+        bool IsSelected { get; set; }
+    }
 }
