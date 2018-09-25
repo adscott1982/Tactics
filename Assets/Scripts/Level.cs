@@ -48,6 +48,12 @@ public class Level : MonoBehaviour
                     break;
             }
         }
+
+        // Exit the game if the user presses escape key
+        if (Input.GetKey("escape"))
+        {
+            Application.Quit();
+        }
     }
 
     private void PerformSelection(Vector3 mousePosition)

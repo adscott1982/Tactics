@@ -48,5 +48,6 @@ public class Agent : MonoBehaviour, ISelectable, IActionPerformer
     public void PerformAction(Vector2 mousePosition)
     {
         Debug.Log($"Action performed to X: {mousePosition.x} Y: {mousePosition.y}");
+        this.pathFinder.TargetPosition = mousePosition;
     }
 }
