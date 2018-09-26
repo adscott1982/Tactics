@@ -6,7 +6,7 @@ using UnityEngine;
 public class Pathfinder : MonoBehaviour
 {
     public float navGridSize = 0.1f;
-    public float navLineWidth = 0.01f;
+    public float navLineWidth = 0.025f;
 
     // Private fields
     private Vector2 targetPosition;
@@ -35,21 +35,21 @@ public class Pathfinder : MonoBehaviour
     {
         if (this.DrawPath && this.waypoints.Any())
         {
-            //this.lineRenderer.positionCount = this.waypoints.Count + 1;
-            //this.lineRenderer.SetPosition(0, this.transform.position);
-            
-            //for (var i = 0; i < this.waypoints.Count; i++)
-            //{
-            //    this.lineRenderer.SetPosition(i + 1, this.waypoints[i].Position.AsVector3());
-            //}
+            this.lineRenderer.positionCount = this.waypoints.Count;
 
-            for (var i = 0; i < this.waypoints.Count - 1; i++)
+            for (var i = 0; i < this.waypoints.Count; i++)
             {
                 var waypointPosition = this.waypoints[i].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
-                var nextWaypointPosition = this.waypoints[i + 1].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
-                Debug.DrawLine(waypointPosition, nextWaypointPosition, Color.red);
-                Debug.DrawLine(waypointPosition, new Vector2(waypointPosition.x - 0.05f, waypointPosition.y), Color.green);
+                this.lineRenderer.SetPosition(i, waypointPosition.AsVector3());
             }
+
+            //for (var i = 0; i < this.waypoints.Count - 1; i++)
+            //{
+            //    var waypointPosition = this.waypoints[i].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
+            //    var nextWaypointPosition = this.waypoints[i + 1].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
+            //    Debug.DrawLine(waypointPosition, nextWaypointPosition, Color.red);
+            //    Debug.DrawLine(waypointPosition, new Vector2(waypointPosition.x - 0.05f, waypointPosition.y), Color.green);
+            //}
         }
     }
 
