@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Pathfinding;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -46,8 +45,10 @@ public class Pathfinder : MonoBehaviour
 
             for (var i = 0; i < this.waypoints.Count - 1; i++)
             {
-                Debug.DrawLine(this.waypoints[i].Position, this.waypoints[i + 1].Position, Color.red);
-                Debug.DrawLine(this.waypoints[i].Position, new Vector2(this.waypoints[i].Position.x - 0.05f, this.waypoints[i].Position.y), Color.green);
+                var waypointPosition = this.waypoints[i].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
+                var nextWaypointPosition = this.waypoints[i + 1].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
+                Debug.DrawLine(waypointPosition, nextWaypointPosition, Color.red);
+                Debug.DrawLine(waypointPosition, new Vector2(waypointPosition.x - 0.05f, waypointPosition.y), Color.green);
             }
         }
     }
@@ -74,30 +75,36 @@ public class Pathfinder : MonoBehaviour
         this.waypoints.Clear();
 
         var startPosition = this.transform.position.AsVector2();
-        var openNodes = new List<Node>();
+        //var openNodes = new List<Node>();
+        var orderedOpenNodes = new BinaryMinHeap<Node, int>();
+        var allOpenNodes = new Dictionary<Vector2Int, Node>();
         var closedNodes = new List<Node>();
 
-        var targetCell = GetNavGridCell(this.navGridSize, startPosition, targetPosition);
-        
+        var targetNavGridPosition = targetPosition.GetNavGridCell(this.navGridSize, startPosition);
 
         // Step 1: A* Pathfind to target using specified nav grid size, checking each cell for collider collision with sphere, or rectangle
 
         // Create open list - add current position
-        openNodes.Add(new Node(new Vector2Int(0, 0), startPosition, targetPosition, null));
+        var firstNode = new Node(new Vector2Int(0, 0), targetNavGridPosition, null);
+        orderedOpenNodes.Add(firstNode, firstNode.FullCost);
+        allOpenNodes.Add(firstNode.NavGridPosition, firstNode);
 
         // ** loop
 
-        while (openNodes.Any())
+        while (orderedOpenNodes.Count > 0)
         {
             // Select the node in openNodes with lowest full cost
-            var currentNode = openNodes.OrderBy(node => node.FullCost).First();
+            Debug.Log($"Checking {orderedOpenNodes.Count} open nodes ordered by full cost, first {orderedOpenNodes.Peek().FullCost}");
+            var currentNode = orderedOpenNodes.Remove();
+            allOpenNodes.Remove(currentNode.NavGridPosition);
 
+            Debug.Log($"Lowest cost node selected, cell [{currentNode.NavGridPosition.x}, {currentNode.NavGridPosition.y}], start cost: {currentNode.StartCost}, end cost {currentNode.EndCost}");
+            
             // Remove this node from open, and add to closed
-            openNodes.Remove(currentNode);
             closedNodes.Add(currentNode);
 
             // If current is the target position cell, then target found, go to next step
-            if (currentNode.NavGridPosition == targetCell)
+            if (currentNode.NavGridPosition == targetNavGridPosition)
             {
                 break;
             }
@@ -105,6 +112,8 @@ public class Pathfinder : MonoBehaviour
             var curX = currentNode.NavGridPosition.x;
             var curY = currentNode.NavGridPosition.y;
 
+            var newNodes = 0;
+            var recalculatedNodes = 0;
             // else, go through each neighbour of the current node, creating node or updating camefrom
             for (var xOffset = -1; xOffset < 2; xOffset++)
             {
@@ -124,23 +133,28 @@ public class Pathfinder : MonoBehaviour
                     }
 
                     var position = new Vector2((navGridPosition.x * this.navGridSize) + startPosition.x, (navGridPosition.y * this.navGridSize) + startPosition.y);
-                    var node = new Node(navGridPosition, position, targetPosition, currentNode);
+                    var node = new Node(navGridPosition, targetNavGridPosition, currentNode);
 
-                    var oldNode = openNodes.FirstOrDefault(n => n.NavGridPosition == node.NavGridPosition);
-
-                    if (oldNode == null)
+                    if (allOpenNodes.TryGetValue(node.NavGridPosition, out var oldNode))
                     {
-                        openNodes.Add(node);
-                        continue;
+                        recalculatedNodes++;
+                        if (node.StartCost < oldNode.StartCost)
+                        {
+                            // Does old node need to be removed from binary heap?
+                            orderedOpenNodes.Add(node, node.StartCost);
+                            allOpenNodes[node.NavGridPosition] = node;
+                        }
                     }
-
-                    if (oldNode.StartCost > node.StartCost)
+                    else
                     {
-                        openNodes.Remove(oldNode);
-                        openNodes.Add(node);
+                        newNodes++;
+                        orderedOpenNodes.Add(node, node.FullCost);
+                        allOpenNodes[node.NavGridPosition] = node;
                     }
                 }
             }
+
+            Debug.Log($"New nodes = {newNodes}, recalculated = {recalculatedNodes}");
         }
 
         // Step 2: Raycast 2D from final waypoint to current position / first waypoint forward until finding first line of sight connection.
@@ -158,11 +172,5 @@ public class Pathfinder : MonoBehaviour
         return true;
     }
 
-    private static Vector2Int GetNavGridCell(float navGridSize, Vector2 origin, Vector2 targetPosition)
-    {
-        var targetPositionOffset = targetPosition - origin;
-        var targetCellX = (int)Math.Round(targetPositionOffset.x / navGridSize);
-        var targetCellY = (int)Math.Round(targetPositionOffset.y / navGridSize);
-        return new Vector2Int(targetCellX, targetCellY);
-    }
+    
 }
