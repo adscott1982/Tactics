@@ -7,11 +7,13 @@ public class Pathfinder : MonoBehaviour
 {
     public float navGridSize = 0.1f;
     public float navLineWidth = 0.025f;
+    public ContactFilter2D contactFilter2D;
 
     // Private fields
     private Vector2 targetPosition;
     private List<Node> waypoints = new List<Node>();
     private Collider2D navCollider;
+    public Collider2D wallsCollider;
     private LineRenderer lineRenderer;
 
     // Start is called before the first frame update
@@ -79,89 +81,64 @@ public class Pathfinder : MonoBehaviour
         var closedNodes = new List<Node>();
 
         var targetNavGridPosition = targetPosition.GetNavGridCell(this.navGridSize, startPosition);
+        Debug.Log($"Target [{targetNavGridPosition.x},{targetNavGridPosition.y}]");
+
+        var targetNode = new Node(targetNavGridPosition, this.navGridSize, startPosition, targetNavGridPosition, null);
+        if (!targetNode.IsTraversable(this.navCollider, this.wallsCollider, this.contactFilter2D))
+        {
+            return false;
+        }
 
         // Create open list - add current position
         var firstNode = new Node(new Vector2Int(0, 0), this.navGridSize, startPosition, targetNavGridPosition, null);
         orderedOpenNodes.Add(firstNode);
 
-        // ** loop
-        var iteration = 0;
         while (orderedOpenNodes.Count > 0)
         {
-            iteration++;
-            
+            Debug.Log($"Open count {orderedOpenNodes.Count}, first: [{orderedOpenNodes.First().NavGridPosition.x},{orderedOpenNodes.First().NavGridPosition.y}] {orderedOpenNodes.First().FullCost} last: [{orderedOpenNodes.First().NavGridPosition.x},{orderedOpenNodes.First().NavGridPosition.y}] {orderedOpenNodes.Last().FullCost}");
             // Select the node in openNodes with lowest full cost
-            Debug.Log($"Checking {orderedOpenNodes.Count} open nodes ordered by full cost, first {orderedOpenNodes.First().FullCost}, last {orderedOpenNodes.First().FullCost}");
-            var sw = System.Diagnostics.Stopwatch.StartNew();
             var currentNode = orderedOpenNodes.First();
-            
-            var timeToGetSorted = sw.RecordAndRestart();
-            //Debug.Log($"Lowest cost node selected, cell [{currentNode.NavGridPosition.x}, {currentNode.NavGridPosition.y}], start cost: {currentNode.StartCost}, end cost {currentNode.EndCost}");
             orderedOpenNodes.Remove(currentNode);
-            var timeToRemove = sw.RecordAndRestart();
-            // Remove this node from open, and add to closed
             closedNodes.Add(currentNode);
-            var timeToAddToClosed = sw.RecordAndRestart();
-            // If current is the target position cell, then target found, go to next step
+
+            // If target reached, exit
             if (currentNode.NavGridPosition == targetNavGridPosition)
             {
                 break;
             }
 
-            var curX = currentNode.NavGridPosition.x;
-            var curY = currentNode.NavGridPosition.y;
-
-            var newNodes = 0;
-            var recalculatedNodes = 0;
-
-            // else, go through each neighbour of the current node, creating node or updating camefrom
-            for (var xOffset = -1; xOffset < 2; xOffset++)
+            foreach(var neighbour in this.GetNeighbours(currentNode, startPosition, targetNavGridPosition))
             {
-                for (var yOffset = -1; yOffset < 2; yOffset++)
+                // if neighbour is not traversable continue
+                //if (!neighbour.IsTraversable(this.navCollider, this.wallsCollider, this.contactFilter2D))
+                //{
+                //    continue;
+                //}
+
+                // if neighbour is in open and costs less now, replace old with new
+                var oldOpen = orderedOpenNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
+                if (oldOpen != null && oldOpen.FullCost > neighbour.FullCost)
                 {
-                    if (xOffset == 0 & yOffset == 0)
-                    {
-                        continue;
-                    }
-
-                    var navGridPosition = new Vector2Int(curX + xOffset, curY + yOffset);
-
-                    // if neighbour is already closed, skip to next
-                    if (closedNodes.Any(n => n.NavGridPosition == navGridPosition))
-                    {
-                        continue;
-                    }
-
-                    
-                    var node = new Node(navGridPosition, this.navGridSize, startPosition, targetNavGridPosition, currentNode);
-
-                    // if neighbour is not navigable add to closed and continue
-                    //if (node.IsTraversable(this.navCollider)
-
-                    var oldNode = orderedOpenNodes.FirstOrDefault(n => n.NavGridPosition == node.NavGridPosition);
-                    if (oldNode != null)
-                    {
-                        recalculatedNodes++;
-                        if (node.StartCost < oldNode.StartCost)
-                        {
-                            orderedOpenNodes.Add(node);
-                        }
-                    }
-                    else
-                    {
-                        newNodes++;
-                        orderedOpenNodes.Add(node);
-                    }
+                    orderedOpenNodes.Remove(oldOpen);
+                    orderedOpenNodes.Add(neighbour);
+                    continue;
                 }
+
+                // if neighbour is on closed and costs less now, remove old from closed and add new to open
+                var oldClosed = closedNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
+                if (oldClosed != null && oldClosed.FullCost > neighbour.FullCost)
+                {
+                    closedNodes.Remove(oldClosed);
+                    orderedOpenNodes.Add(neighbour);
+                    continue;
+                }
+
+                orderedOpenNodes.Add(neighbour);
             }
-
-
-            var timeToCalculateNeighbours = sw.RecordAndRestart();
-            Debug.Log($"Iteration [{iteration}], getsorted: {timeToGetSorted.TotalMilliseconds:F3} ms, remove: {timeToRemove.TotalMilliseconds:F3} ms,timeToAdd: {timeToAddToClosed.TotalMilliseconds:F3} ms, calcNeighbours: {timeToCalculateNeighbours.TotalMilliseconds:F3} ms");
         }
 
-
         // Step 2: Raycast 2D from final waypoint to current position / first waypoint forward until finding first line of sight connection.
+        // use collider.Cast from the start position to the target
         // Remove intermediate waypoints
         // Perform Step 2 again but for second last waypoint, until worked back to the first two waypoints
 
@@ -174,5 +151,25 @@ public class Pathfinder : MonoBehaviour
 
         //this.waypoints.Add(new Waypoint(targetPosition, null));
         return true;
+    }
+
+    private IEnumerable<Node> GetNeighbours(Node currentNode, Vector2 origin, Vector2Int targetCell)
+    {
+        var curX = currentNode.NavGridPosition.x;
+        var curY = currentNode.NavGridPosition.y;
+
+        for (var xOffset = -1; xOffset < 2; xOffset++)
+        {
+            for (var yOffset = -1; yOffset < 2; yOffset++)
+            {
+                if (xOffset == 0 & yOffset == 0)
+                {
+                    continue;
+                }
+
+                var navGridPosition = new Vector2Int(curX + xOffset, curY + yOffset);
+                yield return new Node(navGridPosition, this.navGridSize, origin, targetCell, currentNode);
+            }
+        }
     }
 }

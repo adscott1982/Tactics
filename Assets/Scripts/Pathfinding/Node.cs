@@ -48,15 +48,50 @@ namespace Assets.Scripts.Pathfinding
             var xDelta = Math.Abs(origin.x - destination.x);
             var yDelta = Math.Abs(origin.y - destination.y);
 
-            var (min, max) = xDelta < yDelta ? (xDelta, yDelta - xDelta) : (yDelta, xDelta - yDelta);
+            var min = Math.Min(xDelta, yDelta);
+            var max = Math.Max(xDelta, yDelta);
 
-            var cost = (min * 14) + (max * 10);
-            return cost;
+            var diagCost = min * 14;
+            var straightCost = (max - min) * 10;
+            return diagCost + straightCost;
         }
 
         public int CompareTo(Node other)
         {
             return this.FullCost.CompareTo(other.FullCost);
+        }
+
+        internal bool IsTraversable(Collider2D navCollider, Collider2D wallsCollider, ContactFilter2D contactFilter)
+        {
+            ////if (navCollider is CircleCollider2D)
+            ////{
+            //if (wallsCollider.OverlapPoint(this.WorldPosition))
+            //{
+            //    return false;
+            //}
+            //else
+            //{
+            //    return true;
+            //}
+                var contactArray = new Collider2D[1];
+                var count = Physics2D.OverlapCircle(this.WorldPosition, ((CircleCollider2D)navCollider).radius * 0.1f, contactFilter, contactArray);
+
+            if (contactArray[0] == navCollider)
+            {
+                Debug.LogError("hit own collider");
+            }
+                return count == 0;
+            //}
+            //else
+            //{
+            //    var centre = navCollider.bounds.center.AsVector2();
+            //    var upperLeft = centre - navCollider.bounds.extents.AsVector2();
+            //    var lowerRight = centre + navCollider.bounds.extents.AsVector2();
+            //    return Physics2D.OverlapArea(upperLeft, lowerRight, contactFilter, null) == 0;
+            //}
+            
+            // Check if current position overlapcollider returns any value
+            //return Physics2D.OverlapCollider(navCollider, contactFilter, null) == 0;
         }
     }
 }
