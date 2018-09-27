@@ -73,6 +73,17 @@ namespace Assets.Scripts.Pathfinding
             //{
             //    return true;
             //}
+
+
+            if (this.WorldPosition.x > -4 && this.WorldPosition.x < 4)
+            {
+                if (this.WorldPosition.y > 2 && this.WorldPosition.y < 4)
+                {
+                    return false;
+                }
+            }
+
+            return true;
             var contactArray = new Collider2D[1];
                 var count = Physics2D.OverlapCircle(this.WorldPosition, ((CircleCollider2D)navCollider).radius, contactFilter, contactArray);
 

@@ -109,12 +109,12 @@ public class Pathfinder : MonoBehaviour
 
             foreach(var neighbour in this.GetNeighbours(currentNode, startPosition, targetNavGridPosition).ToList())
             {
-                // if neighbour is not traversable continue
-                //if (!neighbour.IsTraversable(this.navCollider, this.wallsCollider, this.contactFilter2D))
-                //{
-                //    Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} not traversable, continuing");
-                //    continue;
-                //}
+                //if neighbour is not traversable continue
+                if (!neighbour.IsTraversable(this.navCollider, this.wallsCollider, this.contactFilter2D))
+                {
+                    Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} not traversable, continuing");
+                    continue;
+                }
 
                 // if neighbour is in open and costs less now, replace old with new
                 var oldOpen = orderedOpenNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
