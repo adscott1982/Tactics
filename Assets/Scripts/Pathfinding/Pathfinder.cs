@@ -75,34 +75,33 @@ public class Pathfinder : MonoBehaviour
         this.waypoints.Clear();
 
         var startPosition = this.transform.position.AsVector2();
-        //var openNodes = new List<Node>();
-        var orderedOpenNodes = new BinaryMinHeap<Node, int>();
-        var allOpenNodes = new Dictionary<Vector2Int, Node>();
+        var orderedOpenNodes = new SortedSet<Node>();
         var closedNodes = new List<Node>();
 
         var targetNavGridPosition = targetPosition.GetNavGridCell(this.navGridSize, startPosition);
 
-        // Step 1: A* Pathfind to target using specified nav grid size, checking each cell for collider collision with sphere, or rectangle
-
         // Create open list - add current position
-        var firstNode = new Node(new Vector2Int(0, 0), targetNavGridPosition, null);
-        orderedOpenNodes.Add(firstNode, firstNode.FullCost);
-        allOpenNodes.Add(firstNode.NavGridPosition, firstNode);
+        var firstNode = new Node(new Vector2Int(0, 0), this.navGridSize, startPosition, targetNavGridPosition, null);
+        orderedOpenNodes.Add(firstNode);
 
         // ** loop
-
+        var iteration = 0;
         while (orderedOpenNodes.Count > 0)
         {
-            // Select the node in openNodes with lowest full cost
-            Debug.Log($"Checking {orderedOpenNodes.Count} open nodes ordered by full cost, first {orderedOpenNodes.Peek().FullCost}");
-            var currentNode = orderedOpenNodes.Remove();
-            allOpenNodes.Remove(currentNode.NavGridPosition);
-
-            Debug.Log($"Lowest cost node selected, cell [{currentNode.NavGridPosition.x}, {currentNode.NavGridPosition.y}], start cost: {currentNode.StartCost}, end cost {currentNode.EndCost}");
+            iteration++;
             
+            // Select the node in openNodes with lowest full cost
+            Debug.Log($"Checking {orderedOpenNodes.Count} open nodes ordered by full cost, first {orderedOpenNodes.First().FullCost}, last {orderedOpenNodes.First().FullCost}");
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var currentNode = orderedOpenNodes.First();
+            
+            var timeToGetSorted = sw.RecordAndRestart();
+            //Debug.Log($"Lowest cost node selected, cell [{currentNode.NavGridPosition.x}, {currentNode.NavGridPosition.y}], start cost: {currentNode.StartCost}, end cost {currentNode.EndCost}");
+            orderedOpenNodes.Remove(currentNode);
+            var timeToRemove = sw.RecordAndRestart();
             // Remove this node from open, and add to closed
             closedNodes.Add(currentNode);
-
+            var timeToAddToClosed = sw.RecordAndRestart();
             // If current is the target position cell, then target found, go to next step
             if (currentNode.NavGridPosition == targetNavGridPosition)
             {
@@ -114,6 +113,7 @@ public class Pathfinder : MonoBehaviour
 
             var newNodes = 0;
             var recalculatedNodes = 0;
+
             // else, go through each neighbour of the current node, creating node or updating camefrom
             for (var xOffset = -1; xOffset < 2; xOffset++)
             {
@@ -126,36 +126,40 @@ public class Pathfinder : MonoBehaviour
 
                     var navGridPosition = new Vector2Int(curX + xOffset, curY + yOffset);
 
-                    // if neighbour with circle collider intersects grid collider or neighbour is already closed, skip to next
+                    // if neighbour is already closed, skip to next
                     if (closedNodes.Any(n => n.NavGridPosition == navGridPosition))
                     {
                         continue;
                     }
 
-                    var position = new Vector2((navGridPosition.x * this.navGridSize) + startPosition.x, (navGridPosition.y * this.navGridSize) + startPosition.y);
-                    var node = new Node(navGridPosition, targetNavGridPosition, currentNode);
+                    
+                    var node = new Node(navGridPosition, this.navGridSize, startPosition, targetNavGridPosition, currentNode);
 
-                    if (allOpenNodes.TryGetValue(node.NavGridPosition, out var oldNode))
+                    // if neighbour is not navigable add to closed and continue
+                    //if (node.IsTraversable(this.navCollider)
+
+                    var oldNode = orderedOpenNodes.FirstOrDefault(n => n.NavGridPosition == node.NavGridPosition);
+                    if (oldNode != null)
                     {
                         recalculatedNodes++;
                         if (node.StartCost < oldNode.StartCost)
                         {
-                            // Does old node need to be removed from binary heap?
-                            orderedOpenNodes.Add(node, node.StartCost);
-                            allOpenNodes[node.NavGridPosition] = node;
+                            orderedOpenNodes.Add(node);
                         }
                     }
                     else
                     {
                         newNodes++;
-                        orderedOpenNodes.Add(node, node.FullCost);
-                        allOpenNodes[node.NavGridPosition] = node;
+                        orderedOpenNodes.Add(node);
                     }
                 }
             }
 
-            Debug.Log($"New nodes = {newNodes}, recalculated = {recalculatedNodes}");
+
+            var timeToCalculateNeighbours = sw.RecordAndRestart();
+            Debug.Log($"Iteration [{iteration}], getsorted: {timeToGetSorted.TotalMilliseconds:F3} ms, remove: {timeToRemove.TotalMilliseconds:F3} ms,timeToAdd: {timeToAddToClosed.TotalMilliseconds:F3} ms, calcNeighbours: {timeToCalculateNeighbours.TotalMilliseconds:F3} ms");
         }
+
 
         // Step 2: Raycast 2D from final waypoint to current position / first waypoint forward until finding first line of sight connection.
         // Remove intermediate waypoints
@@ -171,6 +175,4 @@ public class Pathfinder : MonoBehaviour
         //this.waypoints.Add(new Waypoint(targetPosition, null));
         return true;
     }
-
-    
 }

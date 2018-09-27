@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -162,5 +163,12 @@ public static class CameraExtensions
             .First();
 
         return (T)(object)value;
+    }
+
+    public static TimeSpan RecordAndRestart(this Stopwatch sw)
+    {
+        var currentTime = sw.Elapsed;
+        sw.Restart();
+        return currentTime;
     }
 }

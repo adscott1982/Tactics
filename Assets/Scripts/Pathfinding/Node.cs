@@ -1,22 +1,26 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.Pathfinding
 {
-    public class Node
+    public class Node : IComparable<Node>
     {
         public int StartCost { get; private set; }
         public int EndCost { get; private set; }
         public int FullCost { get; private set; }
-
+        public Vector2 WorldPosition { get; private set; }
         public Vector2Int NavGridPosition { get; private set; }
         public Vector2Int TargetPosition { get; private set; }
         public Node CameFrom { get; private set; }
 
-        public Node(Vector2Int navGridPosition, Vector2Int targetPosition, Node cameFrom)
+        public Node(Vector2Int navGridPosition, float navGridSize, Vector2 origin, Vector2Int targetPosition, Node cameFrom)
         {
             this.NavGridPosition = navGridPosition;
             this.UpdateCameFromNode(cameFrom);
+
+            this.WorldPosition = new Vector2((navGridPosition.x * navGridSize) + origin.x, (navGridPosition.y * navGridSize) + origin.y);
 
             this.EndCost = TravelCost(navGridPosition, targetPosition);
             this.FullCost = this.StartCost + this.EndCost;
@@ -48,6 +52,11 @@ namespace Assets.Scripts.Pathfinding
 
             var cost = (min * 14) + (max * 10);
             return cost;
+        }
+
+        public int CompareTo(Node other)
+        {
+            return this.FullCost.CompareTo(other.FullCost);
         }
     }
 }
