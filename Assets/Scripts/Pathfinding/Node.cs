@@ -63,8 +63,8 @@ namespace Assets.Scripts.Pathfinding
 
         internal bool IsTraversable(Collider2D navCollider, Collider2D wallsCollider, ContactFilter2D contactFilter)
         {
-            ////if (navCollider is CircleCollider2D)
-            ////{
+            //if (navCollider is CircleCollider2D)
+            //{
             //if (wallsCollider.OverlapPoint(this.WorldPosition))
             //{
             //    return false;
@@ -73,8 +73,8 @@ namespace Assets.Scripts.Pathfinding
             //{
             //    return true;
             //}
-                var contactArray = new Collider2D[1];
-                var count = Physics2D.OverlapCircle(this.WorldPosition, ((CircleCollider2D)navCollider).radius * 0.1f, contactFilter, contactArray);
+            var contactArray = new Collider2D[1];
+                var count = Physics2D.OverlapCircle(this.WorldPosition, ((CircleCollider2D)navCollider).radius, contactFilter, contactArray);
 
             if (contactArray[0] == navCollider)
             {
