@@ -77,40 +77,35 @@ public class Pathfinder : MonoBehaviour
         this.waypoints.Clear();
 
         var startPosition = this.transform.position.AsVector2();
-        //var orderedOpenNodes = new SortedSet<Node>();
-        var allOpenNodes = new List<Node>();
+        var openNodes = new List<Node>();
         var closedNodes = new List<Node>();
 
         var targetNavGridPosition = targetPosition.GetNavGridCell(this.navGridSize, startPosition);
-        Debug.Log($"Target [{targetNavGridPosition.x},{targetNavGridPosition.y}]");
 
         var targetNode = new Node(targetNavGridPosition, this.navGridSize, startPosition, targetNavGridPosition, null);
-        if (!targetNode.IsTraversable(this.navCollider, this.wallsCollider, this.contactFilter2D))
+        if (!targetNode.IsTraversable(this.navCollider, this.contactFilter2D))
         {
             return false;
         }
 
         // Create open list - add current position
         var firstNode = new Node(new Vector2Int(0, 0), this.navGridSize, startPosition, targetNavGridPosition, null);
-        //orderedOpenNodes.Add(firstNode);
-        allOpenNodes.Add(firstNode);
+        openNodes.Add(firstNode);
 
-        while (allOpenNodes.Count > 0)
+        while (openNodes.Count > 0)
         {
             var text = $"Ordered: ";
-            foreach (var orderedOpenNode in allOpenNodes)
+            foreach (var orderedOpenNode in openNodes)
             {
                 text +=
                     $"[{orderedOpenNode.NavGridPosition.x},{orderedOpenNode.NavGridPosition.y}={orderedOpenNode.FullCost}]";
             }
 
             // Select the node in openNodes with lowest full cost
-            var currentNode = allOpenNodes.OrderBy(n => n.FullCost).First();
-            //orderedOpenNodes.Remove(currentNode);
-            allOpenNodes.Remove(currentNode);
+            var currentNode = openNodes.OrderBy(n => n.FullCost).First();
+            openNodes.Remove(currentNode);
             closedNodes.Add(currentNode);
 
-            //Debug.Log(text);
             // If target reached, exit
             if (currentNode.NavGridPosition == targetNavGridPosition)
             {
@@ -119,45 +114,32 @@ public class Pathfinder : MonoBehaviour
 
             foreach(var neighbour in this.GetNeighbours(currentNode, startPosition, targetNavGridPosition).ToList())
             {
-                //Debug.Log($"Checking [{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] start: {neighbour.StartCost}, end {neighbour.EndCost}, full {neighbour.FullCost}");
-
                 // If not walkable, continue
-                if (!neighbour.IsTraversable(this.navCollider, this.wallsCollider, this.contactFilter2D))
+                if (!neighbour.IsTraversable(this.navCollider, this.contactFilter2D))
                 {
-                    //Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} not traversable, continuing");
                     continue;
                 }
 
-                // If in closed, continue
+                // If in closed nodes, continue
                 if (closedNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition) != null)
                 {
-                    //Debug.Log($"[{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] already closed, continuing");
                     continue;
                 }
 
-                var oldNode = allOpenNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
+                var oldNode = openNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
+
                 // If not in open list, add to open list
-                //var oldOpen = orderedOpenNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
                 if (oldNode == null)
                 {
-                    //Debug.Log($"[{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] is new, adding to open");
-                    //orderedOpenNodes.Add(neighbour);
-                    allOpenNodes.Add(neighbour);
+                    openNodes.Add(neighbour);
                 }
                 else
                 {
-                    // If the new node calculation has a better cost, replace it.
+                    // If the new node calculation has a better cost than the old one, replace it
                     if (neighbour.FullCost < oldNode.FullCost)
                     {
-                        //Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} already present in open, replacing, old cost {oldOpen.FullCost}, new cost {neighbour.FullCost}");
-                        //orderedOpenNodes.Remove(oldOpen);
-                        allOpenNodes.Remove(oldNode);
-                        allOpenNodes.Add(neighbour);
-                    }
-                    else
-                    {
-                        //Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} already present in open, but higher than old cost {oldOpen.FullCost}, new cost {neighbour.FullCost}");
-
+                        openNodes.Remove(oldNode);
+                        openNodes.Add(neighbour);
                     }
                 }
             }

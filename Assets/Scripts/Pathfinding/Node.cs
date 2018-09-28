@@ -71,48 +71,17 @@ namespace Assets.Scripts.Pathfinding
             return this.FullCost.CompareTo(other.FullCost);
         }
 
-        internal bool IsTraversable(Collider2D navCollider, Collider2D wallsCollider, ContactFilter2D contactFilter)
+        internal bool IsTraversable(Collider2D navCollider, ContactFilter2D contactFilter)
         {
-            //if (navCollider is CircleCollider2D)
-            //{
-            //    if (wallsCollider.OverlapPoint(this.WorldPosition))
-            //    {
-            //        return false;
-            //    }
-            //    else
-            //    {
-            //        return true;
-            //    }
-            //}
-
-            //if (this.WorldPosition.x > -4 && this.WorldPosition.x < 4)
-            //{
-            //    if (this.WorldPosition.y > 2 && this.WorldPosition.y < 4)
-            //    {
-            //        return false;
-            //    }
-            //}
-
-            //return true;
-            var contactArray = new Collider2D[1];
-                var count = Physics2D.OverlapCircle(this.WorldPosition, ((CircleCollider2D)navCollider).radius, contactFilter, contactArray);
-
-            if (contactArray[0] == navCollider)
+            if (!(navCollider is CircleCollider2D))
             {
-                Debug.LogError("hit own collider");
+                return false;
             }
-                return count == 0;
-            //}
-            //else
-            //{
-            //    var centre = navCollider.bounds.center.AsVector2();
-            //    var upperLeft = centre - navCollider.bounds.extents.AsVector2();
-            //    var lowerRight = centre + navCollider.bounds.extents.AsVector2();
-            //    return Physics2D.OverlapArea(upperLeft, lowerRight, contactFilter, null) == 0;
-            //}
-            
-            // Check if current position overlapcollider returns any value
-            //return Physics2D.OverlapCollider(navCollider, contactFilter, null) == 0;
+
+            var contactArray = new Collider2D[1];
+            var count = Physics2D.OverlapCircle(this.WorldPosition, ((CircleCollider2D)navCollider).radius, contactFilter, contactArray);
+
+            return count == 0;
         }
     }
 }
