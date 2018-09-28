@@ -110,7 +110,7 @@ public class Pathfinder : MonoBehaviour
             allOpenNodes.Remove(currentNode);
             closedNodes.Add(currentNode);
 
-            Debug.Log(text);
+            //Debug.Log(text);
             // If target reached, exit
             if (currentNode.NavGridPosition == targetNavGridPosition)
             {
@@ -119,19 +119,19 @@ public class Pathfinder : MonoBehaviour
 
             foreach(var neighbour in this.GetNeighbours(currentNode, startPosition, targetNavGridPosition).ToList())
             {
-                Debug.Log($"Checking [{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] start: {neighbour.StartCost}, end {neighbour.EndCost}, full {neighbour.FullCost}");
+                //Debug.Log($"Checking [{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] start: {neighbour.StartCost}, end {neighbour.EndCost}, full {neighbour.FullCost}");
 
                 // If not walkable, continue
                 if (!neighbour.IsTraversable(this.navCollider, this.wallsCollider, this.contactFilter2D))
                 {
-                    Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} not traversable, continuing");
+                    //Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} not traversable, continuing");
                     continue;
                 }
 
                 // If in closed, continue
                 if (closedNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition) != null)
                 {
-                    Debug.Log($"[{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] already closed, continuing");
+                    //Debug.Log($"[{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] already closed, continuing");
                     continue;
                 }
 
@@ -140,7 +140,7 @@ public class Pathfinder : MonoBehaviour
                 //var oldOpen = orderedOpenNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
                 if (oldNode == null)
                 {
-                    Debug.Log($"[{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] is new, adding to open");
+                    //Debug.Log($"[{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] is new, adding to open");
                     //orderedOpenNodes.Add(neighbour);
                     allOpenNodes.Add(neighbour);
                 }
