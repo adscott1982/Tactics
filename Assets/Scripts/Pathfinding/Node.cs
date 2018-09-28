@@ -55,17 +55,26 @@ namespace Assets.Scripts.Pathfinding
             var straightCost = (max - min) * 10;
             return diagCost + straightCost;
         }
+        public override string ToString()
+        {
+            return $"[{this.NavGridPosition.x},{this.NavGridPosition.y}] {this.FullCost}";
+        }
 
         public int CompareTo(Node other)
         {
-            if (other == this)
+            if (other.NavGridPosition == this.NavGridPosition)
             {
                 return 0;
             }
 
             if (other.FullCost == this.FullCost)
             {
-                return 1;
+                if (other.NavGridPosition.x != this.NavGridPosition.x)
+                {
+                    return this.NavGridPosition.x.CompareTo(other.NavGridPosition.x);
+                }
+
+                return this.NavGridPosition.y.CompareTo(other.NavGridPosition.y);
             }
 
             return this.FullCost.CompareTo(other.FullCost);

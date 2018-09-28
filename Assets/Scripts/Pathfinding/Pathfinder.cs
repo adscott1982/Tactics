@@ -77,7 +77,7 @@ public class Pathfinder : MonoBehaviour
         this.waypoints.Clear();
 
         var startPosition = this.transform.position.AsVector2();
-        var openNodes = new List<Node>();
+        var openNodesSorted = new SortedSet<Node>();
         var closedNodes = new List<Node>();
 
         var targetNavGridPosition = targetPosition.GetNavGridCell(this.navGridSize, startPosition);
@@ -90,20 +90,13 @@ public class Pathfinder : MonoBehaviour
 
         // Create open list - add current position
         var firstNode = new Node(new Vector2Int(0, 0), this.navGridSize, startPosition, targetNavGridPosition, null);
-        openNodes.Add(firstNode);
+        openNodesSorted.Add(firstNode);
 
-        while (openNodes.Count > 0)
+        while (openNodesSorted.Count > 0)
         {
-            var text = $"Ordered: ";
-            foreach (var orderedOpenNode in openNodes)
-            {
-                text +=
-                    $"[{orderedOpenNode.NavGridPosition.x},{orderedOpenNode.NavGridPosition.y}={orderedOpenNode.FullCost}]";
-            }
-
             // Select the node in openNodes with lowest full cost
-            var currentNode = openNodes.OrderBy(n => n.FullCost).First();
-            openNodes.Remove(currentNode);
+            var currentNode = openNodesSorted.First();
+            openNodesSorted.Remove(currentNode);
             closedNodes.Add(currentNode);
 
             // If target reached, exit
@@ -126,20 +119,19 @@ public class Pathfinder : MonoBehaviour
                     continue;
                 }
 
-                var oldNode = openNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
+                var oldNode = openNodesSorted.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
 
                 // If not in open list, add to open list
                 if (oldNode == null)
                 {
-                    openNodes.Add(neighbour);
+                    openNodesSorted.Add(neighbour);
                 }
                 else
                 {
                     // If the new node calculation has a better cost than the old one, replace it
                     if (neighbour.FullCost < oldNode.FullCost)
                     {
-                        openNodes.Remove(oldNode);
-                        openNodes.Add(neighbour);
+                        openNodesSorted.Add(neighbour);
                     }
                 }
             }
