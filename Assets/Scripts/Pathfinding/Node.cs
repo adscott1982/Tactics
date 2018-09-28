@@ -58,7 +58,16 @@ namespace Assets.Scripts.Pathfinding
 
         public int CompareTo(Node other)
         {
-            if (other.FullCost == this.FullCost) return 1;
+            if (other == this)
+            {
+                return 0;
+            }
+
+            if (other.FullCost == this.FullCost)
+            {
+                return 1;
+            }
+
             return this.FullCost.CompareTo(other.FullCost);
         }
 

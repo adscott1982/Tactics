@@ -77,8 +77,8 @@ public class Pathfinder : MonoBehaviour
         this.waypoints.Clear();
 
         var startPosition = this.transform.position.AsVector2();
-        var orderedOpenNodes = new SortedSet<Node>();
-        var allOpenNodes = new Dictionary<Vector2Int, Node>();
+        //var orderedOpenNodes = new SortedSet<Node>();
+        var allOpenNodes = new List<Node>();
         var closedNodes = new List<Node>();
 
         var targetNavGridPosition = targetPosition.GetNavGridCell(this.navGridSize, startPosition);
@@ -92,25 +92,23 @@ public class Pathfinder : MonoBehaviour
 
         // Create open list - add current position
         var firstNode = new Node(new Vector2Int(0, 0), this.navGridSize, startPosition, targetNavGridPosition, null);
-        orderedOpenNodes.Add(firstNode);
-        allOpenNodes.Add(firstNode.NavGridPosition, firstNode);
+        //orderedOpenNodes.Add(firstNode);
+        allOpenNodes.Add(firstNode);
 
-        while (orderedOpenNodes.Count > 0)
+        while (allOpenNodes.Count > 0)
         {
             var text = $"Ordered: ";
-            foreach (var orderedOpenNode in orderedOpenNodes)
+            foreach (var orderedOpenNode in allOpenNodes)
             {
                 text +=
                     $"[{orderedOpenNode.NavGridPosition.x},{orderedOpenNode.NavGridPosition.y}={orderedOpenNode.FullCost}]";
             }
 
             // Select the node in openNodes with lowest full cost
-            var currentNode = orderedOpenNodes.First();
-            orderedOpenNodes.Remove(currentNode);
-            allOpenNodes.Remove(currentNode.NavGridPosition);
+            var currentNode = allOpenNodes.OrderBy(n => n.FullCost).First();
+            //orderedOpenNodes.Remove(currentNode);
+            allOpenNodes.Remove(currentNode);
             closedNodes.Add(currentNode);
-
-
 
             Debug.Log(text);
             // If target reached, exit
@@ -137,27 +135,28 @@ public class Pathfinder : MonoBehaviour
                     continue;
                 }
 
+                var oldNode = allOpenNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
                 // If not in open list, add to open list
                 //var oldOpen = orderedOpenNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
-                if (!allOpenNodes.TryGetValue(neighbour.NavGridPosition, out var oldOpen))
+                if (oldNode == null)
                 {
                     Debug.Log($"[{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y}] is new, adding to open");
-                    orderedOpenNodes.Add(neighbour);
-                    allOpenNodes.Add(neighbour.NavGridPosition, neighbour);
+                    //orderedOpenNodes.Add(neighbour);
+                    allOpenNodes.Add(neighbour);
                 }
                 else
                 {
                     // If the new node calculation has a better cost, replace it.
-                    if (neighbour.FullCost < oldOpen.FullCost)
+                    if (neighbour.FullCost < oldNode.FullCost)
                     {
-                        Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} already present in open, replacing, old cost {oldOpen.FullCost}, new cost {neighbour.FullCost}");
+                        //Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} already present in open, replacing, old cost {oldOpen.FullCost}, new cost {neighbour.FullCost}");
                         //orderedOpenNodes.Remove(oldOpen);
-                        orderedOpenNodes.Add(neighbour);
-                        allOpenNodes[neighbour.NavGridPosition] = neighbour;
+                        allOpenNodes.Remove(oldNode);
+                        allOpenNodes.Add(neighbour);
                     }
                     else
                     {
-                        Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} already present in open, but higher than old cost {oldOpen.FullCost}, new cost {neighbour.FullCost}");
+                        //Debug.Log($"{neighbour.NavGridPosition.x},{neighbour.NavGridPosition.y} already present in open, but higher than old cost {oldOpen.FullCost}, new cost {neighbour.FullCost}");
 
                     }
                 }
