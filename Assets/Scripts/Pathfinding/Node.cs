@@ -58,6 +58,7 @@ namespace Assets.Scripts.Pathfinding
 
         public int CompareTo(Node other)
         {
+            if (other.FullCost == this.FullCost) return 1;
             return this.FullCost.CompareTo(other.FullCost);
         }
 
@@ -65,25 +66,25 @@ namespace Assets.Scripts.Pathfinding
         {
             //if (navCollider is CircleCollider2D)
             //{
-            //if (wallsCollider.OverlapPoint(this.WorldPosition))
-            //{
-            //    return false;
+            //    if (wallsCollider.OverlapPoint(this.WorldPosition))
+            //    {
+            //        return false;
+            //    }
+            //    else
+            //    {
+            //        return true;
+            //    }
             //}
-            //else
+
+            //if (this.WorldPosition.x > -4 && this.WorldPosition.x < 4)
             //{
-            //    return true;
+            //    if (this.WorldPosition.y > 2 && this.WorldPosition.y < 4)
+            //    {
+            //        return false;
+            //    }
             //}
 
-
-            if (this.WorldPosition.x > -4 && this.WorldPosition.x < 4)
-            {
-                if (this.WorldPosition.y > 2 && this.WorldPosition.y < 4)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            //return true;
             var contactArray = new Collider2D[1];
                 var count = Physics2D.OverlapCircle(this.WorldPosition, ((CircleCollider2D)navCollider).radius, contactFilter, contactArray);
 
