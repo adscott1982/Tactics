@@ -76,9 +76,11 @@ public class Pathfinder : MonoBehaviour
     {
         this.waypoints.Clear();
 
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         var startPosition = this.transform.position.AsVector2();
-        var openNodesSorted = new SortedSet<Node>();
-        var closedNodes = new List<Node>();
+        var openNodesSorted = new BMinHeap<Node>();
+        var closedNodes = new Dictionary<Vector2Int, Node>();
+        var blockedNodes = new Dictionary<Vector2Int, Node>();
 
         var targetNavGridPosition = targetPosition.GetNavGridCell(this.navGridSize, startPosition);
 
@@ -90,14 +92,14 @@ public class Pathfinder : MonoBehaviour
 
         // Create open list - add current position
         var firstNode = new Node(new Vector2Int(0, 0), this.navGridSize, startPosition, targetNavGridPosition, null);
-        openNodesSorted.Add(firstNode);
-
+        //openNodesSorted.Add(firstNode);
+        openNodesSorted.Insert(firstNode);
         while (openNodesSorted.Count > 0)
         {
             // Select the node in openNodes with lowest full cost
-            var currentNode = openNodesSorted.First();
-            openNodesSorted.Remove(currentNode);
-            closedNodes.Add(currentNode);
+            var currentNode = openNodesSorted.ExtractMin();
+            //openNodesSorted.Remove(currentNode);
+            closedNodes.Add(currentNode.NavGridPosition, currentNode);
 
             // If target reached, exit
             if (currentNode.NavGridPosition == targetNavGridPosition)
@@ -107,42 +109,52 @@ public class Pathfinder : MonoBehaviour
 
             foreach(var neighbour in this.GetNeighbours(currentNode, startPosition, targetNavGridPosition).ToList())
             {
+                if (blockedNodes.ContainsKey(neighbour.NavGridPosition))
+                {
+                    continue;
+                }
+
                 // If not walkable, continue
                 if (!neighbour.IsTraversable(this.navCollider, this.contactFilter2D))
                 {
+                    blockedNodes.Add(neighbour.NavGridPosition, neighbour);
                     continue;
                 }
 
                 // If in closed nodes, continue
-                if (closedNodes.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition) != null)
+                if (closedNodes.ContainsKey(neighbour.NavGridPosition))
                 {
                     continue;
                 }
 
-                var oldNode = openNodesSorted.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
+                //var oldNode = openNodesSorted.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
 
                 // If not in open list, add to open list
-                if (oldNode == null)
+                if (!openNodesSorted.Exists(neighbour))
                 {
-                    openNodesSorted.Add(neighbour);
+                    openNodesSorted.Insert(neighbour);
                 }
                 else
                 {
+                    var oldNode = openNodesSorted.FirstOrDefault(n => n.NavGridPosition == neighbour.NavGridPosition);
                     // If the new node calculation has a better cost than the old one, replace it
                     if (neighbour.FullCost < oldNode.FullCost)
                     {
-                        openNodesSorted.Add(neighbour);
+                        oldNode.UpdateCameFromNode(currentNode);
+                        //openNodesSorted.Delete(oldNode);
+                        //openNodesSorted.Insert(neighbour);
                     }
                 }
             }
         }
 
+        Debug.Log($"Time to get path: {sw.Elapsed.TotalMilliseconds:F2} ms");
         // Step 2: Raycast 2D from final waypoint to current position / first waypoint forward until finding first line of sight connection.
         // use collider.Cast from the start position to the target
         // Remove intermediate waypoints
         // Perform Step 2 again but for second last waypoint, until worked back to the first two waypoints
 
-        var nextNode = closedNodes.Last();
+        var nextNode = closedNodes.Last().Value;
         while (nextNode != null)
         {
             this.waypoints.Add(nextNode);

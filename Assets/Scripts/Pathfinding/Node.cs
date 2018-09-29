@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Pathfinding
 {
-    public class Node : IComparable<Node>
+    public class Node : IComparable<Node>, IComparable
     {
         public int StartCost { get; private set; }
         public int EndCost { get; private set; }
@@ -60,6 +60,16 @@ namespace Assets.Scripts.Pathfinding
             return $"[{this.NavGridPosition.x},{this.NavGridPosition.y}] {this.FullCost}";
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Node)
+            {
+                return this.NavGridPosition == ((Node)obj).NavGridPosition;
+            }
+
+            return false;
+        }
+
         public int CompareTo(Node other)
         {
             if (other.NavGridPosition == this.NavGridPosition)
@@ -78,6 +88,11 @@ namespace Assets.Scripts.Pathfinding
             }
 
             return this.FullCost.CompareTo(other.FullCost);
+        }
+
+        public int CompareTo(object obj)
+        {
+            return CompareTo((Node)obj);
         }
 
         internal bool IsTraversable(Collider2D navCollider, ContactFilter2D contactFilter)
