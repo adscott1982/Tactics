@@ -70,6 +70,11 @@ namespace Assets.Scripts.Pathfinding
             return false;
         }
 
+        public override int GetHashCode()
+        {
+            return this.NavGridPosition.GetHashCode();
+        }
+
         public int CompareTo(Node other)
         {
             if (other.NavGridPosition == this.NavGridPosition)
