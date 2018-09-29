@@ -8,19 +8,20 @@ public class Pathfinder : MonoBehaviour
     public float navGridSize = 0.1f;
     public float navLineWidth = 0.025f;
     public ContactFilter2D contactFilter2D;
+    public LineRenderer lineRenderer;
 
     // Private fields
     private Vector2 targetPosition;
-    private List<Node> waypoints = new List<Node>();
     private Collider2D navCollider;
     public Collider2D wallsCollider;
-    private LineRenderer lineRenderer;
+
+    public List<Node> Waypoints { get; private set; }
 
     // Start is called before the first frame update
     private void Start()
     {
+        this.Waypoints = new List<Node>();
         this.navCollider = this.GetComponent<Collider2D>();
-        this.lineRenderer = this.GetComponent<LineRenderer>();
         this.lineRenderer.startWidth = navLineWidth;
         this.lineRenderer.endWidth = navLineWidth;
         this.DrawPath = true;
@@ -29,19 +30,18 @@ public class Pathfinder : MonoBehaviour
     // Called every frame
     private void Update()
     {
-        this.DrawPathLines();
-
+        //this.DrawPathLines();
     }
 
     private void DrawPathLines()
     {
-        if (this.DrawPath && this.waypoints.Any())
+        if (this.DrawPath && this.Waypoints.Any())
         {
-            this.lineRenderer.positionCount = this.waypoints.Count;
+            this.lineRenderer.positionCount = this.Waypoints.Count;
 
-            for (var i = 0; i < this.waypoints.Count; i++)
+            for (var i = 0; i < this.Waypoints.Count; i++)
             {
-                var waypointPosition = this.waypoints[i].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
+                var waypointPosition = this.Waypoints[i].NavGridPosition.GetPosition(this.transform.position, this.navGridSize);
                 this.lineRenderer.SetPosition(i, waypointPosition.AsVector3());
             }
 
@@ -65,6 +65,7 @@ public class Pathfinder : MonoBehaviour
                 if (this.CalculateWaypoints(value))
                 {
                     this.targetPosition = value;
+                    this.DrawPathLines();
                 }
             }
         }
@@ -74,7 +75,7 @@ public class Pathfinder : MonoBehaviour
 
     private bool CalculateWaypoints(Vector2 targetPosition)
     {
-        this.waypoints.Clear();
+        this.Waypoints.Clear();
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
         var startPosition = this.transform.position.AsVector2();
@@ -158,7 +159,7 @@ public class Pathfinder : MonoBehaviour
         var nextNode = closedNodes.Last().Value;
         while (nextNode != null)
         {
-            this.waypoints.Add(nextNode);
+            this.Waypoints.Insert(0, nextNode);
             nextNode = nextNode.CameFrom;
         }
 

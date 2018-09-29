@@ -12,7 +12,6 @@ namespace Assets.Scripts.Pathfinding
         public int FullCost { get; private set; }
         public Vector2 WorldPosition { get; private set; }
         public Vector2Int NavGridPosition { get; private set; }
-        public Vector2Int TargetPosition { get; private set; }
         public Node CameFrom { get; private set; }
 
         public Node(Vector2Int navGridPosition, float navGridSize, Vector2 origin, Vector2Int targetPosition, Node cameFrom)

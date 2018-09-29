@@ -1,4 +1,6 @@
 ﻿using Assets.Scripts.Interfaces;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -7,6 +9,8 @@ public class Agent : MonoBehaviour, ISelectable, IActionPerformer
     public GameObject SelectionIndicator;
     private SpriteRenderer selectionIndicatorSprite;
     private Pathfinder pathFinder;
+    private List<Vector2> currentpath;
+    public float MoveSpeed = 3;
 
     public bool IsSelected { get; set; }
 
@@ -21,6 +25,19 @@ public class Agent : MonoBehaviour, ISelectable, IActionPerformer
     void Update()
     {
         this.selectionIndicatorSprite.enabled = this.IsSelected;
+
+        this.FollowPath();
+    }
+
+    private void FollowPath()
+    {
+        if (this.currentpath != null && this.currentpath.Any())
+        {
+            var target = this.currentpath[0];
+
+            this.transform.position = target;
+            this.currentpath.RemoveAt(0);
+        }
     }
 
     private void HandleInputs()
@@ -49,5 +66,6 @@ public class Agent : MonoBehaviour, ISelectable, IActionPerformer
     {
         Debug.Log($"Action performed to X: {mousePosition.x} Y: {mousePosition.y}");
         this.pathFinder.TargetPosition = mousePosition;
+        this.currentpath = this.pathFinder.Waypoints.Select(n => n.WorldPosition).ToList();
     }
 }
