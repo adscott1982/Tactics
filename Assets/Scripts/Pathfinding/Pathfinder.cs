@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Pathfinding;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -163,7 +164,69 @@ public class Pathfinder : MonoBehaviour
             nextNode = nextNode.CameFrom;
         }
 
+        this.Waypoints = this.GetDecimatedWaypoints(this.Waypoints, this.navCollider, this.contactFilter2D);
+
         return true;
+    }
+
+    private List<Node> GetDecimatedWaypoints(List<Node> waypoints, Collider2D navCollider, ContactFilter2D contactFilter)
+    {
+        var radius = ((CircleCollider2D)navCollider).radius;
+        if (waypoints.Count < 3) // No point in decimating
+        {
+            return waypoints;
+        }
+
+        var decimatedWaypoints = new List<Node>
+        {
+            this.Waypoints[0]
+        };
+
+        // Keep raycasting to successive nodes until raycast fails
+        // Add the last successful node index to the decimated list
+        // Set the next index to check to the last successful index
+
+        for (var i = 0; i < waypoints.Count; i++)
+        {
+            // Check the next waypoint is not the last
+            if (i + 1 == waypoints.Count - 1)
+            {
+                // Add the final waypoint and exit
+                decimatedWaypoints.Add(waypoints[i + 1]);
+                break;
+            }
+
+            var origin = waypoints[i].WorldPosition;
+
+            var rayCastIndex = i + 2; // We already know it can raycast to the next waypoint, so choose the one after that
+            var direction = waypoints[rayCastIndex].WorldPosition - origin;
+            var distance = Vector2.Distance(waypoints[rayCastIndex].WorldPosition, origin);
+            var hitFinalWaypoint = false;
+
+            while (Physics2D.CircleCast(origin, radius, direction, contactFilter, new RaycastHit2D[1], distance) == 0)
+            {
+                // if at final waypoint, break
+                if (rayCastIndex == waypoints.Count - 1)
+                {
+                    hitFinalWaypoint = true;
+                    break;
+                }
+
+                // No hit, now try the next one
+                rayCastIndex++;
+
+                direction = waypoints[rayCastIndex].WorldPosition - origin;
+                distance = Vector2.Distance(waypoints[rayCastIndex].WorldPosition, origin);
+            }
+
+            // If was the final waypoint set that as the index, otherwise it was a hit, so previous
+            var clearWaypointIndex = hitFinalWaypoint ? rayCastIndex : rayCastIndex - 1;
+            decimatedWaypoints.Add(waypoints[clearWaypointIndex]);
+
+            i = clearWaypointIndex;
+        }
+
+        return decimatedWaypoints;
     }
 
     private IEnumerable<Node> GetNeighbours(Node currentNode, Vector2 origin, Vector2Int targetCell)
@@ -176,6 +239,11 @@ public class Pathfinder : MonoBehaviour
             for (var yOffset = -1; yOffset < 2; yOffset++)
             {
                 if (xOffset == 0 & yOffset == 0)
+                {
+                    continue;
+                }
+
+                if (xOffset != 0 && yOffset != 0) // No diagonals
                 {
                     continue;
                 }
