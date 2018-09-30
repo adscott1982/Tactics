@@ -145,7 +145,10 @@ public class Pathfinder : MonoBehaviour
                     // If the new node calculation has a better cost than the old one, replace it
                     if (neighbour.FullCost < oldNode.FullCost)
                     {
+                        //openNodesSorted.Delete(oldNode);
+                        //openNodesSorted.Insert(neighbour);
                         oldNode.UpdateCameFromNode(currentNode);
+                        //allOpenNodes[neighbour.NavGridPosition] = neighbour;
                     }
                 }
             }
